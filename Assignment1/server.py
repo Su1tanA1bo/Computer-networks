@@ -5,8 +5,13 @@ localIP     = "server"
 localPort   = 50000
 bufferSize  = 1024
 
-msgFromServer       = "Hello UDP Client"
-bytesToSend         = str.encode(msgFromServer)
+worker1Port = ("worker1", 50001)
+worker2Port = ("worker2", 50002)
+worker3Port = ("worker3", 50003)
+targetPort = ("", 0)
+
+responseToClient = "Message Received"
+responseToClientBytes = str.encode(responseToClient)
 
 # Create a datagram socket
 UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -20,13 +25,31 @@ print("UDP server up and listening")
 while(True):
     bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
     message = bytesAddressPair[0]
-    address = bytesAddressPair[1]
+    clientAddress = bytesAddressPair[1]
 
     clientMsg = "Message from Client:{}".format(message)
-    clientIP  = "Client IP Address:{}".format(address)
+    clientIP  = "Client IP Address:{}".format(clientAddress)
+    
+    print("message is {}".format(message))
+    if("{}".format(message) == "worker1"):
+        targetPort = worker1Port
+        print("worker 1 has been selected")
+    if(message == "worker2"):
+        targetPort = worker2Port
+    if(message == "worker3"):
+        targetPort = worker3Port
     
     print(clientMsg)
     print(clientIP)
-
-    # Sending a reply to client
-    UDPServerSocket.sendto(bytesToSend, address)
+    
+    #requesting file
+    UDPServerSocket.sendto((str.encode("We need file")), targetPort)
+    
+    #file received
+    fileFromWorker = UDPServerSocket.recvfrom(bufferSize)
+    fileMessage = fileFromWorker[0]
+    print("file from worker: {}".format(fileMessage))
+    
+    #sending file to client
+    UDPServerSocket.sendto(fileMessage, clientAddress)
+    

@@ -1,12 +1,13 @@
 import socket
 import os
 
-localIP     = "worker1"
+localIP     = "172."
 localPort   = 50001
 bufferSize  = 1024
+serverAddressPort   = ("server", 50000)
 
 filename = "info.txt"
-filesize = os.path.getsize(filename)
+#filesize = os.path.getsize(filename)
 
 UDPWorkerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 UDPWorkerSocket.bind((localIP, localPort))
@@ -22,9 +23,11 @@ while(True):
     ServerMsg = "Message from server:{}".format(message)
     print(ServerMsg)
     
-    with open(filename, "rb") as f:
-        bytes_read = f.read(4096)
-        UDPWorkerSocket.sendto(bytes_read)
+    UDPWorkerSocket.sendto(str.encode("placeholder for file.txt"), serverAddressPort)
+    print("file sent!")
+    #with open(filename, "rb") as f:
+    #    bytes_read = f.read(4096)
+    #    UDPWorkerSocket.sendto(bytes_read)
     
     
     
