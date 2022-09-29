@@ -1,6 +1,6 @@
 import socket
 
-localIP     = "worker3"
+localIP     = "worker2"
 localPort   = 50002
 bufferSize  = 1024
 serverAddressPort   = ("server", 50000)
