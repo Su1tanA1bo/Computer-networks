@@ -1,7 +1,7 @@
 # based on https://pythontic.com/modules/socket/udp-client-server-example
 import socket
 
-msgFromClient       = "worker1"
+msgFromClient       = "worker3"
 bytesToSend         = str.encode(msgFromClient)
 serverAddressPort   = ("server", 50000)
 bufferSize          = 1024

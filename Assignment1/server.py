@@ -31,13 +31,15 @@ while(True):
     clientIP  = "Client IP Address:{}".format(clientAddress)
     
     print("message is {}".format(message))
-    if("{}".format(message) == "worker1"):
+    if("{}".format(message) == "b'worker1'"):
         targetPort = worker1Port
         print("worker 1 has been selected")
-    if(message == "worker2"):
+    if("{}".format(message) == "b'worker2'"):
         targetPort = worker2Port
-    if(message == "worker3"):
+        print("worker 2 has been selected")
+    if("{}".format(message) == "b'worker3'"):
         targetPort = worker3Port
+        print("worker 3 has been selected")
     
     print(clientMsg)
     print(clientIP)

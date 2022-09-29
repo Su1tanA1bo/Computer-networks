@@ -1,7 +1,6 @@
 import socket
-import os
 
-localIP     = "172."
+localIP     = "worker1"
 localPort   = 50001
 bufferSize  = 1024
 serverAddressPort   = ("server", 50000)
@@ -23,7 +22,7 @@ while(True):
     ServerMsg = "Message from server:{}".format(message)
     print(ServerMsg)
     
-    UDPWorkerSocket.sendto(str.encode("placeholder for file.txt"), serverAddressPort)
+    UDPWorkerSocket.sendto(str.encode("placeholder for file from worker1"), serverAddressPort)
     print("file sent!")
     #with open(filename, "rb") as f:
     #    bytes_read = f.read(4096)
