@@ -10,6 +10,8 @@ worker2Port = ("worker2", 50002)
 worker3Port = ("worker3", 50003)
 targetPort = ("", 0)
 
+fileName = "File.txt"
+
 responseToClient = "Message Received"
 responseToClientBytes = str.encode(responseToClient)
 
@@ -21,6 +23,7 @@ UDPServerSocket.bind((localIP, localPort))
 
 print("UDP server up and listening")
 
+"""
 # Listen for incoming datagrams
 while(True):
     bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
@@ -54,4 +57,21 @@ while(True):
     
     #sending file to client
     UDPServerSocket.sendto(fileMessage, clientAddress)
+"""
+while(True):
+    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    message = bytesAddressPair[0]
+    address = bytesAddressPair[1]
+
+    clientMsg = "Message from Client:{}".format(message)
+    clientIP  = "Client IP Address:{}".format(address)
+    
+    print(clientMsg)
+    print(clientIP)
+
+    # Sending file to client
+    fileInBinary = open(fileName, "rb")
+    dataInBinary = fileInBinary.read(bufferSize)
+    if(UDPServerSocket.sendto(dataInBinary, address)): #if send is successful
+        print("send succesful!")
     
