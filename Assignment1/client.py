@@ -3,7 +3,7 @@ import socket
 
 serverAddressPort   = ("server", 50000)
 bufferSize          = 1024
-
+fileName = "File.txt"
 # Create a UDP socket at client side
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
@@ -13,5 +13,8 @@ bytesToSend = str.encode("worker"+str(clientInput))
 UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
 msgFromServer = UDPClientSocket.recvfrom(bufferSize)
-msg = "Message from Server {}".format(msgFromServer[0])
-print(msg)
+msg = "{}".format(msgFromServer[0].decode('utf8'))
+
+file = open("./files/"+fileName, 'w')
+file.write(msg)
+file.close()
