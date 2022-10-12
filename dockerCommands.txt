@@ -1,0 +1,15 @@
+docker create -ti --name client --cap-add=all -v ~/compnets:/compnets csnetimage /bin/bash
+
+docker network connect csnet client
+
+docker cp ./Documents\College\Computer-Networks\Assignment1\server.py server:/compnets
+
+python3 server.py --ipAddress 172.20.0.0 --port 9999
+
+export DISPLAY=host.docker.internal:0
+
+wireshark -i eth1 -k --log-level critical &
+
+docker cp client:/compnets/files/File.txt ./Desktop
+
+C:\Users\Sulta\compnets
