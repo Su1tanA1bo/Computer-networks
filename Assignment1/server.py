@@ -23,7 +23,6 @@ UDPServerSocket.bind((localIP, localPort))
 
 print("UDP server up and listening")
 
-"""
 # Listen for incoming datagrams
 while(True):
     bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
@@ -51,27 +50,13 @@ while(True):
     UDPServerSocket.sendto((str.encode("We need file")), targetPort)
     
     #file received
-    fileFromWorker = UDPServerSocket.recvfrom(bufferSize)
-    fileMessage = fileFromWorker[0]
-    print("file from worker: {}".format(fileMessage))
+    while True:
+        fileFromWorker = UDPServerSocket.recvfrom(bufferSize)
+        fileMessage = fileFromWorker[0]
+        count = 0
+        print("\nfile from worker: "+str(count)+": ""{}".format(fileMessage))
+        count = count + 1
     
     #sending file to client
-    UDPServerSocket.sendto(fileMessage, clientAddress)
-"""
-while(True):
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-    message = bytesAddressPair[0]
-    address = bytesAddressPair[1]
+    #UDPServerSocket.sendto(fileMessage, clientAddress)
 
-    clientMsg = "Message from Client:{}".format(message)
-    clientIP  = "Client IP Address:{}".format(address)
-    
-    print(clientMsg)
-    print(clientIP)
-
-    # Sending file to client
-    fileInBinary = open(fileName, "rb")
-    dataInBinary = fileInBinary.read(bufferSize)
-    if(UDPServerSocket.sendto(dataInBinary, address)): #if send is successful
-        print("send succesful!")
-    
