@@ -27,7 +27,8 @@ with open(filename, "rb") as file:
         UDPWorkerSocket.sendto(bytesToSend, serverAddressPort)
         print("sent a packet!")
     
-print("file sent!")
+print("file sent! -- sending ACK")
+UDPWorkerSocket.sendto("SendingFinished".encode(), serverAddressPort)
 #with open(filename, "rb") as f:
 #    bytes_read = f.read(4096)
 #    UDPWorkerSocket.sendto(bytes_read)

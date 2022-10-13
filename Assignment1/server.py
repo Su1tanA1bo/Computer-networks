@@ -48,15 +48,28 @@ while(True):
     
     #requesting file
     UDPServerSocket.sendto((str.encode("We need file")), targetPort)
-    
+    worker1Message = ""
     #file received
     while True:
         fileFromWorker = UDPServerSocket.recvfrom(bufferSize)
         fileMessage = fileFromWorker[0]
-        count = 0
-        print("\nfile from worker: "+str(count)+": ""{}".format(fileMessage))
-        count = count + 1
-    
+        WorkerPort = fileFromWorker[1]
+        if("{}".format(WorkerPort[1]) == "50001"):
+            if("{}".format(fileMessage) == "b'SendingFinished'"):
+                break;
+            print("\nfile from worker1: {}".format(fileMessage))
+            worker1Message = worker1Message+"{}".format(fileMessage)
+        if("{}".format(WorkerPort) == "50002"):
+            if("{}".format(fileMessage) == "b'SendingFinished'"):
+                break;
+            print("\nfile from worker2: {}".format(fileMessage))
+            worker2Message = worker2Message+"{}".format(fileMessage)
+        if("{}".format(WorkerPort) == "50003"):
+            if("{}".format(fileMessage) == "b'SendingFinished'"):
+                break;
+            print("\nfile from worker3: {}".format(fileMessage))
+            worker3Message = worker3Message+"{}".format(fileMessage)
     #sending file to client
+    print(worker1Message)
     #UDPServerSocket.sendto(fileMessage, clientAddress)
 
