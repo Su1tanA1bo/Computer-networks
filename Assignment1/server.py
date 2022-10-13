@@ -10,7 +10,7 @@ worker2Port = ("worker2", 50002)
 worker3Port = ("worker3", 50003)
 targetPort = ("", 0)
 
-fileName = "File.txt"
+fileName = "LoremIpsum.txt"
 
 responseToClient = "Message Received"
 responseToClientBytes = str.encode(responseToClient)
@@ -46,6 +46,10 @@ while(True):
     print(clientMsg)
     print(clientIP)
     
+    worker1On = False
+    worker2On = False
+    worker3On = False
+    
     #requesting file
     UDPServerSocket.sendto((str.encode("We need file")), targetPort)
     worker1Message = ""
@@ -55,21 +59,30 @@ while(True):
         fileMessage = fileFromWorker[0]
         WorkerPort = fileFromWorker[1]
         if("{}".format(WorkerPort[1]) == "50001"):
+            worker1On = True
             if("{}".format(fileMessage) == "b'SendingFinished'"):
                 break;
-            print("\nfile from worker1: {}".format(fileMessage))
-            worker1Message = worker1Message+"{}".format(fileMessage)
+            with open("worker1File.txt", "a") as file:
+                file.write(fileMessage.decode())
         if("{}".format(WorkerPort) == "50002"):
+            worker2On = True
             if("{}".format(fileMessage) == "b'SendingFinished'"):
                 break;
-            print("\nfile from worker2: {}".format(fileMessage))
-            worker2Message = worker2Message+"{}".format(fileMessage)
+            with open("worker2File.txt", "a") as file:
+                file.write(fileMessage.decode())
         if("{}".format(WorkerPort) == "50003"):
+            worker3On = True
             if("{}".format(fileMessage) == "b'SendingFinished'"):
                 break;
-            print("\nfile from worker3: {}".format(fileMessage))
-            worker3Message = worker3Message+"{}".format(fileMessage)
-    #sending file to client
-    print(worker1Message)
+            with open("worker3File.txt", "a") as file:
+                file.write(fileMessage.decode())
+        
+    if worker1On:
+        
+        
+    if worker2On:
+        
+    if worker3On:
+        
     #UDPServerSocket.sendto(fileMessage, clientAddress)
 
