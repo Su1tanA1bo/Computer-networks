@@ -1,4 +1,5 @@
 # based on https://pythontic.com/modules/socket/udp-client-server-example
+from xmlrpc import client
 import zlib
 import socket
 
@@ -13,9 +14,26 @@ bytesToSend = str.encode("worker"+str(clientInput))
 # Send to server using created UDP socket
 UDPClientSocket.sendto(bytesToSend, serverAddressPortTuple)
 
-#msgFromServer = UDPClientSocket.recvfrom(bufferSize)
-#msg = "{}".format(msgFromServer[0].decode('utf8'))
-
-file = open("./files/"+fileName, 'w')
-#file.write(msg)
-file.close()
+while True:
+    fileFromWorker = UDPClientSocket.recvfrom(bufferSize)
+    fileMessage = fileFromWorker[0]
+    WorkerPort = fileFromWorker[1]
+    if (clientInput == 1):
+        if ("{}".format(fileMessage) == "b'SendingFinished'"):
+            break
+        with open("worker1File.txt", "a") as file:
+            file.write(fileMessage.decode())
+    if (clientInput == 2):
+        global worker2On
+        worker2On = True
+        if ("{}".format(fileMessage) == "b'SendingFinished'"):
+            break
+        with open("tempImage.jpg", "ab") as tempImage:
+            tempImage.write(fileMessage)
+    if (clientInput == 3):
+        global worker3On
+        worker3On = True
+        if ("{}".format(fileMessage) == "b'SendingFinished'"):
+            break
+        with open("worker3File.txt", "a") as file:
+            file.write(fileMessage.decode())

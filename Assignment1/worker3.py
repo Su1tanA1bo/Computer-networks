@@ -22,7 +22,14 @@ while(True):
     ServerMsg = "Message from server:{}".format(message)
     print(ServerMsg)
     
-    UDPWorkerSocket.sendto(str.encode("placeholder for file from worker3"), serverAddressPort)
+    with open(filename, "rb") as file:
+        while True:
+            bytesToSend = file.read(bufferSize)
+            if not bytesToSend:
+                break #no more bytes left to send
+            UDPWorkerSocket.sendto(bytesToSend, serverAddressPort)
+            print("sent a packet!")
+    
     print("file sent!")
     #with open(filename, "rb") as f:
     #    bytes_read = f.read(4096)
