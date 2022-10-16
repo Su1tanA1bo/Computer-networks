@@ -90,6 +90,7 @@ def server():
 
 
 server()
+# sending to client
 if workerOneOn == True:
     with open("worker1File.txt", "rb") as file:
         while True:

@@ -1,6 +1,4 @@
 # based on https://pythontic.com/modules/socket/udp-client-server-example
-from xmlrpc import client
-import zlib
 import socket
 
 serverAddressPortTuple = ("server", 50000)
@@ -10,6 +8,7 @@ fileName = "File.txt"
 # Create a UDP socket at client side
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 clientInput = input("Enter the worker number: ")
+print("input ="+clientInput)
 bytesToSend = str.encode("worker"+str(clientInput))
 # Send to server using created UDP socket
 UDPClientSocket.sendto(bytesToSend, serverAddressPortTuple)
@@ -17,23 +16,14 @@ UDPClientSocket.sendto(bytesToSend, serverAddressPortTuple)
 while True:
     fileFromWorker = UDPClientSocket.recvfrom(bufferSize)
     fileMessage = fileFromWorker[0]
-    WorkerPort = fileFromWorker[1]
-    if (clientInput == 1):
-        if ("{}".format(fileMessage) == "b'SendingFinished'"):
-            break
-        with open("worker1File.txt", "a") as file:
+    if ("{}".format(fileMessage) == "b'SendingFinished'"):
+        break
+    if (clientInput == "1"):
+        with open("./files/worker1File.txt", "a") as file:
             file.write(fileMessage.decode())
-    if (clientInput == 2):
-        global worker2On
-        worker2On = True
-        if ("{}".format(fileMessage) == "b'SendingFinished'"):
-            break
-        with open("tempImage.jpg", "ab") as tempImage:
-            tempImage.write(fileMessage)
-    if (clientInput == 3):
-        global worker3On
-        worker3On = True
-        if ("{}".format(fileMessage) == "b'SendingFinished'"):
-            break
-        with open("worker3File.txt", "a") as file:
+    if (clientInput == "2"):
+        with open("./files/tempImage.jpg", "ab") as file:
+            file.write(fileMessage)
+    if (clientInput == "3"):
+        with open("./files/worker3File.txt", "a") as file:
             file.write(fileMessage.decode())
