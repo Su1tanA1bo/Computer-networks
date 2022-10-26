@@ -4,13 +4,7 @@ from Crypto import Random
 from Crypto.Cipher import AES
 from base64 import b64decode, b64encode
 
-localIP = "worker3"
-localPort = 50003
-bufferSize = 1024
-serverAddressPort = ("server", 50000)
-
-filename = "info.txt"
-#filesize = os.path.getsize(filename)
+# class used for encrypting
 
 
 class AESCipher(object):
@@ -48,32 +42,9 @@ class AESCipher(object):
         return self.unpad(text)
 
 
-UDPWorkerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-UDPWorkerSocket.bind((localIP, localPort))
-
-print("Worker 3 listening for request")
-
-# message sent from server will cause worker to reply with text file
-while (True):
-    bytesAddressPair = UDPWorkerSocket.recvfrom(bufferSize)
-    message = bytesAddressPair[0]
-    address = bytesAddressPair[1]
-    encryptionProtocol = AESCipher(key=key)
-    message = message.decode()
-    message = encryptionProtocol.decrypt(message)
-    ServerMsg = "Message from server:{}".format(message)
-    print(ServerMsg)
-
-    with open(filename, "rb") as file:
-        while True:
-            bytesToSend = file.read(bufferSize)
-            if not bytesToSend:
-                break  # no more bytes left to send
-            bytesToSend = (encryptionProtocol.encrypt(bytesToSend)).encode()
-            UDPWorkerSocket.sendto(bytesToSend, serverAddressPort)
-            print("sent a packet!")
-
-    print("file sent!")
-    # with open(filename, "rb") as f:
-    #    bytes_read = f.read(4096)
-    #    UDPWorkerSocket.sendto(bytes_read)
+text = "PublicKeyForNetwork"
+encryptionProtocol = AESCipher(key=text)
+awd = encryptionProtocol.encrypt(text="helloWorld")
+print(awd)
+decrypted = encryptionProtocol.decrypt(awd)
+print(decrypted)

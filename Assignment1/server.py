@@ -4,11 +4,16 @@
 # test all threee workers inshallah
 import socket
 import os
+import hashlib
+from Crypto import Random
+from Crypto.Cipher import AES
+from base64 import b64decode, b64encode, decode
 
 localIP = "server"
 localPort = 50000
 bufferSize = 1024
 
+key = "PublicKeyForNetwork"  # public key
 worker1Port = ("worker1", 50001)
 worker2Port = ("worker2", 50002)
 worker3Port = ("worker3", 50003)
@@ -20,6 +25,44 @@ workerOneOn = False
 global workerTwoOn
 workerTwoOn = False
 
+
+class AESCipher(object):
+    def __init__(self, key):  # recieve key
+        self.blockSize = AES.block_size
+        # generate 256 bit hash key
+        self.key = hashlib.sha256(key.encode()).digest()
+
+    def pad(self, text):  # takes string and makes sure theres 128 bits in string
+        bytesToPad = self.blockSize - len(text) % self.blockSize
+        asciiString = chr(bytesToPad)
+        paddingString = bytesToPad * asciiString
+        paddedText = text + paddingString
+        return paddedText
+
+    @staticmethod
+    def unpad(text):  # removes unused bits from padded string
+        lastCharacter = text[len(text) - 1:]
+        bytesToRemove = ord(lastCharacter)
+        return text[:-bytesToRemove]
+
+    def encrypt(self, text):
+        text = self.pad(text)
+        iv = Random.new().read(self.blockSize)
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        encryptedText = cipher.encrypt(text.encode())
+        return b64encode(iv + encryptedText).decode("utf-8")
+
+    def decrypt(self, encryptedText):
+        encryptedText = b64decode(encryptedText)
+        iv = encryptedText[:self.blockSize]
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        text = cipher.decrypt(
+            encryptedText[self.blockSize:]).decode("utf-8")
+        return self.unpad(text)
+
+
+encryptionProtocol = AESCipher(key=key)
+
 responseToClient = "Message Received"
 responseToClientBytes = str.encode(responseToClient)
 
@@ -28,6 +71,7 @@ UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 # Bind to address and ip
 UDPServerSocket.bind((localIP, localPort))
+
 try:
     os.remove("tempImage.jpg")
 except:
@@ -39,43 +83,43 @@ print("UDP server up and listening")
 
 def server():
     bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-    message = bytesAddressPair[0]
+    encryptedMessage = bytesAddressPair[0]
     global clientAddress
     clientAddress = bytesAddressPair[1]
-
-    clientMsg = "Message from Client:{}".format(message)
+    encryptedMessage = encryptedMessage.decode()
+    message = encryptionProtocol.decrypt(encryptedMessage)
 
     print("message is {}".format(message))
-    if ("{}".format(message) == "b'worker1'"):
+    if (message == "worker1"):
         targetPort = worker1Port
         print("worker 1 has been selected")
-    if ("{}".format(message) == "b'worker2'"):
+    if (message == "worker2"):
         targetPort = worker2Port
         print("worker 2 has been selected")
-    if ("{}".format(message) == "b'worker3'"):
+    if (message == "worker3"):
         targetPort = worker3Port
         print("worker 3 has been selected")
 
-    print(clientMsg)
-
     # requesting file
-    UDPServerSocket.sendto((str.encode("We need file")), targetPort)
+    requestMessage = str.encode(encryptionProtocol.encrypt("We need file"))
+    UDPServerSocket.sendto(requestMessage, targetPort)
     # file received
     while True:
         fileFromWorker = UDPServerSocket.recvfrom(bufferSize)
         fileMessage = fileFromWorker[0]
+        fileMessage = encryptionProtocol.decrypt(fileMessage.decode())
         WorkerPort = fileFromWorker[1]
         if ("{}".format(WorkerPort[1]) == "50001"):
             global workerOneOn
             workerOneOn = True
-            if ("{}".format(fileMessage) == "b'SendingFinished'"):
+            if (fileMessage == "SendingFinished"):
                 break
             with open("worker1File.txt", "a") as file:
-                file.write(fileMessage.decode())
+                file.write(fileMessage)
         if ("{}".format(WorkerPort[1]) == "50002"):
             global workerTwoOn
             workerTwoOn = True
-            if ("{}".format(fileMessage) == "b'SendingFinished'"):
+            if (fileMessage == "SendingFinished"):
                 break
             with open("tempImage.jpg", "ab") as tempImage:
                 tempImage.write(fileMessage)
@@ -83,10 +127,10 @@ def server():
         if ("{}".format(WorkerPort[1]) == "50003"):
             global workerThreeOn
             workerThreeOn = True
-            if ("{}".format(fileMessage) == "b'SendingFinished'"):
+            if (fileMessage == "SendingFinished"):
                 break
             with open("worker3File.txt", "a") as file:
-                file.write(fileMessage.decode())
+                file.write(fileMessage)
 
 
 server()
@@ -97,9 +141,11 @@ if workerOneOn == True:
             bytesToSend = file.read(bufferSize)
             if not bytesToSend:
                 break  # no more bytes left to send
+            bytesToSend = (encryptionProtocol.encrypt(bytesToSend)).encode()
             UDPServerSocket.sendto(bytesToSend, clientAddress)
             print("sent a packet!")
-    UDPServerSocket.sendto("SendingFinished".encode(), clientAddress)
+    ack = (encryptionProtocol.encrypt("SendingFinished")).encode()
+    UDPServerSocket.sendto(ack, clientAddress)
     print("worker1 file sent to client")
 
 if workerTwoOn == True:
@@ -108,9 +154,11 @@ if workerTwoOn == True:
             bytesToSend = file.read(bufferSize)
             if not bytesToSend:
                 break  # no more bytes left to send
+            bytesToSend = (encryptionProtocol.encrypt(bytesToSend)).encode()
             UDPServerSocket.sendto(bytesToSend, clientAddress)
             print("sent a packet!")
-    UDPServerSocket.sendto("SendingFinished".encode(), clientAddress)
+    ack = (encryptionProtocol.encrypt("SendingFinished")).encode()
+    UDPServerSocket.sendto(ack, clientAddress)
     print("worker2 image sent to client")
 
 if workerThreeOn == True:
@@ -118,10 +166,12 @@ if workerThreeOn == True:
         while True:
             bytesToSend = file.read(bufferSize)
             if not bytesToSend:
-                break  # no more bytes left to send
+                break  # no more bytes left to
+            bytesToSend = (encryptionProtocol.encrypt(bytesToSend)).encode()
             UDPServerSocket.sendto(bytesToSend, clientAddress)
             print("sent a packet!")
-    UDPServerSocket.sendto("SendingFinished".encode(), clientAddress)
+    ack = (encryptionProtocol.encrypt("SendingFinished")).encode()
+    UDPServerSocket.sendto(ack, clientAddress)
     print("worker3 file sent to client")
 
 #UDPServerSocket.sendto(fileMessage, clientAddress)
